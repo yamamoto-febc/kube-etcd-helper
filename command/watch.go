@@ -8,9 +8,12 @@ import (
 	"gopkg.in/urfave/cli.v2"
 
 	"encoding/json"
+	"github.com/mitchellh/go-homedir"
+	"io/ioutil"
 	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -32,6 +35,10 @@ var watchCmd = &cli.Command{
 			Usage:   "Enable JSON pretty format",
 			EnvVars: []string{"ETCD_JSON_PRETTY"},
 		},
+		&cli.StringFlag{
+			Name:  "output-dir",
+			Usage: "Output in the hierarchical structure of keys",
+		},
 	},
 	Action: func(c *cli.Context) error {
 
@@ -48,6 +55,20 @@ var watchCmd = &cli.Command{
 		key := "/"
 		if c.NArg() == 1 {
 			key = c.Args().First()
+		}
+
+		isNeedOutfile := false
+		outputDir := c.String("output-dir")
+		if len(outputDir) > 0 {
+			isNeedOutfile = true
+			dir, err := homedir.Expand(filepath.Clean(outputDir))
+			if err != nil {
+				return err
+			}
+			if _, err := os.Stat(dir); err == nil {
+				return fmt.Errorf("output-dir[%q] is already exists", dir)
+			}
+			outputDir = dir
 		}
 
 		decoder := scheme.Codecs.UniversalDeserializer()
@@ -103,7 +124,33 @@ var watchCmd = &cli.Command{
 					return err
 				}
 
-				fmt.Println(string(jsonData))
+				if isNeedOutfile {
+					key := string(kv.Key)
+					if strings.HasPrefix(key, "/") {
+						key = strings.TrimLeft(key, "/")
+					}
+
+					dir := filepath.Join(outputDir, key)
+					// create dir if not exists
+					if _, err := os.Stat(dir); err != nil {
+						if err = os.MkdirAll(dir, 0755); err != nil {
+							return err
+						}
+					}
+
+					files, err := ioutil.ReadDir(dir)
+					if err != nil {
+						return err
+					}
+					fileCount := len(files)
+					fileName := fmt.Sprintf("%012d.json", fileCount+1)
+					if err := ioutil.WriteFile(filepath.Join(dir, fileName), jsonData, 0755); err != nil {
+						return err
+					}
+
+				} else {
+					fmt.Println(string(jsonData))
+				}
 			}
 		}
 

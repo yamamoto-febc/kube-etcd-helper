@@ -69,6 +69,9 @@ $ kube-etcd-helper watch /registry/namespaces
     
 # using excludes option
 $ kube-etcd-helper watch -e /registry/services/endpoints/kube-system/kube-scheduler
+
+# output to directory per keys
+$ kube-etcd-helper watch --output-dir out/
 ```
 
 ## Options
