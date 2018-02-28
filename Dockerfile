@@ -21,6 +21,6 @@ MAINTAINER Kazumichi Yamamoto <yamamoto.febc@gmail.com>
 LABEL MAINTAINER 'Kazumichi Yamamoto <yamamoto.febc@gmail.com>'
 
 RUN set -x && apk add --no-cache --update ca-certificates
-COPY --from=builder /go/src/github.com/yamamoto-febc/kube-etcd-helper/bin/kube-etcd-helper /usr/local/bin/
+COPY --from=builder /go/src/github.com/yamamoto-febc/kube-etcd-helper/bin/kube-etcd-helper_linux_amd64 /usr/local/bin/kube-etcd-helper
 RUN chmod +x /usr/local/bin/kube-etcd-helper
 ENTRYPOINT ["/usr/local/bin/kube-etcd-helper"]
