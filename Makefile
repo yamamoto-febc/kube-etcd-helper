@@ -67,7 +67,7 @@ build-darwin-amd64:
 build-darwin-386:
 	@$(MAKE) build GOOS=darwin GOARCH=386
 
-bin/kube-etcd-helper_$(GOOS)_$(GOARCH)$(SUFFIX):
+bin/kube-etcd-helper_$(GOOS)_$(GOARCH)$(SUFFIX): $(GO_FILES)
 	CGO_ENABLED=0 go build -ldflags $(BUILD_LDFLAGS) -o bin/kube-etcd-helper_$(GOOS)_$(GOARCH)$(SUFFIX) *.go
 
 .PHONY: test
