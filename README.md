@@ -74,6 +74,10 @@ $ kube-etcd-helper watch -e /registry/services/endpoints/kube-system/kube-schedu
 $ kube-etcd-helper watch --output-dir out/
 ```
 
+#### Watch events output example:
+
+![output_example.png](assets/images/output_example.png)
+
 ## Options
 
 ### Configure etcd endpoint
