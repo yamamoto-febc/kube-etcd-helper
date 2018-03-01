@@ -8,9 +8,12 @@ import (
 	"gopkg.in/urfave/cli.v2"
 
 	"encoding/json"
+	"github.com/mitchellh/go-homedir"
+	"io/ioutil"
 	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -32,6 +35,10 @@ var dumpCmd = &cli.Command{
 			Usage:   "Enable JSON pretty format",
 			EnvVars: []string{"ETCD_JSON_PRETTY"},
 		},
+		&cli.StringFlag{
+			Name:  "output-dir",
+			Usage: "Output in the hierarchical structure of keys",
+		},
 	},
 	Action: func(c *cli.Context) error {
 
@@ -49,12 +56,22 @@ var dumpCmd = &cli.Command{
 			key = c.Args().First()
 		}
 
+		isNeedOutfile := false
+		outputDir := c.String("output-dir")
+		if len(outputDir) > 0 {
+			isNeedOutfile = true
+			dir, err := homedir.Expand(filepath.Clean(outputDir))
+			if err != nil {
+				return err
+			}
+			outputDir = dir
+		}
+
 		response, err := clientv3.NewKV(client).Get(context.Background(), key, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
 		if err != nil {
 			return err
 		}
 
-		kvData := []etcd3kv{}
 		decoder := scheme.Codecs.UniversalDeserializer()
 		encoder := jsonserializer.NewSerializer(jsonserializer.DefaultMetaFactory, scheme.Scheme, scheme.Scheme, false)
 		objJSON := &bytes.Buffer{}
@@ -73,7 +90,7 @@ var dumpCmd = &cli.Command{
 				continue
 			}
 			objJSON.Reset()
-			if err := encoder.Encode(obj, objJSON); err != nil {
+			if err = encoder.Encode(obj, objJSON); err != nil {
 				fmt.Fprintf(os.Stderr, "WARN: error encoding object %#v as JSON: %v", obj, err)
 				continue
 			}
@@ -81,30 +98,49 @@ var dumpCmd = &cli.Command{
 			if err := json.Unmarshal(objJSON.Bytes(), &objMap); err != nil {
 				return nil
 			}
-			kvData = append(
-				kvData,
-				etcd3kv{
-					Key:            string(kv.Key),
-					Value:          objMap,
-					CreateRevision: kv.CreateRevision,
-					ModRevision:    kv.ModRevision,
-					Version:        kv.Version,
-					Lease:          kv.Lease,
-				},
-			)
-		}
+			kvData := etcd3kv{
+				Key:            string(kv.Key),
+				Value:          objMap,
+				CreateRevision: kv.CreateRevision,
+				ModRevision:    kv.ModRevision,
+				Version:        kv.Version,
+				Lease:          kv.Lease,
+			}
 
-		var jsonData []byte
-		if c.Bool("pretty") {
-			jsonData, err = json.MarshalIndent(kvData, "", "  ")
-		} else {
-			jsonData, err = json.Marshal(kvData)
-		}
-		if err != nil {
-			return err
-		}
+			var jsonData []byte
+			if c.Bool("pretty") {
+				jsonData, err = json.MarshalIndent(kvData, "", "  ")
+			} else {
+				jsonData, err = json.Marshal(kvData)
+			}
+			if err != nil {
+				return err
+			}
 
-		fmt.Println(string(jsonData))
+			if isNeedOutfile {
+				key := string(kv.Key)
+				if strings.HasPrefix(key, "/") {
+					key = strings.TrimLeft(key, "/")
+				}
+
+				dir := filepath.Join(outputDir, key)
+				// create dir if not exists
+				if _, err := os.Stat(dir); err != nil {
+					if err = os.MkdirAll(dir, 0755); err != nil {
+						return err
+					}
+				}
+
+				fileName := fmt.Sprintf("%020d.json", kv.ModRevision)
+				if err := ioutil.WriteFile(filepath.Join(dir, fileName), jsonData, 0755); err != nil {
+					return err
+				}
+
+			} else {
+				fmt.Println(string(jsonData))
+			}
+
+		}
 
 		return nil
 
