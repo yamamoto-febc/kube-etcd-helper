@@ -65,9 +65,6 @@ var watchCmd = &cli.Command{
 			if err != nil {
 				return err
 			}
-			if _, err := os.Stat(dir); err == nil {
-				return fmt.Errorf("output-dir[%q] is already exists", dir)
-			}
 			outputDir = dir
 		}
 
@@ -138,12 +135,7 @@ var watchCmd = &cli.Command{
 						}
 					}
 
-					files, err := ioutil.ReadDir(dir)
-					if err != nil {
-						return err
-					}
-					fileCount := len(files)
-					fileName := fmt.Sprintf("%012d.json", fileCount+1)
+					fileName := fmt.Sprintf("%020d.json", kv.ModRevision)
 					if err := ioutil.WriteFile(filepath.Join(dir, fileName), jsonData, 0755); err != nil {
 						return err
 					}
