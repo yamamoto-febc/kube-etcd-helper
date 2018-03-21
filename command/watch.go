@@ -36,8 +36,9 @@ var watchCmd = &cli.Command{
 			EnvVars: []string{"ETCD_JSON_PRETTY"},
 		},
 		&cli.StringFlag{
-			Name:  "output-dir",
-			Usage: "Output in the hierarchical structure of keys",
+			Name:    "output-dir",
+			Aliases: []string{"o", "out"},
+			Usage:   "Output in the hierarchical structure of keys",
 		},
 	},
 	Action: func(c *cli.Context) error {
