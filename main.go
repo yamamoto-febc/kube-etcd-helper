@@ -1,14 +1,15 @@
 package main
 
 import (
-	"k8s.io/kubernetes/pkg/kubectl/scheme"
+	"k8s.io/kubectl/pkg/scheme"
 	// install all APIs
-	"github.com/yamamoto-febc/kube-etcd-helper/command"
-	"gopkg.in/urfave/cli.v2"
-	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/install"
-	_ "k8s.io/kubernetes/pkg/apis/core/install"
 	"log"
 	"os"
+
+	"kube-etcd-helper/command"
+
+	cli "github.com/urfave/cli/v2"
+	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/install"
 )
 
 var (
@@ -18,21 +19,19 @@ var (
 )
 
 func init() {
-	apiregistration.Install(scheme.GroupFactoryRegistry, scheme.Registry, scheme.Scheme)
+	apiregistration.Install(scheme.Scheme)
 }
 
 func main() {
 	app := &cli.App{
-		Name:                  appName,
-		Usage:                 appUsage,
-		HelpName:              appName,
-		Copyright:             appCopyright,
-		EnableShellCompletion: true,
-		Version:               command.Version,
-		Flags:                 command.CliFlags,
-		Commands:              command.Commands,
+		Name:      appName,
+		Usage:     appUsage,
+		HelpName:  appName,
+		Copyright: appCopyright,
+		Version:   command.Version,
+		Flags:     command.CliFlags,
+		Commands:  command.Commands,
 	}
-	cli.InitCompletionFlag.Hidden = true
 
 	err := app.Run(os.Args)
 	if err != nil {

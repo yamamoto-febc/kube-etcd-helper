@@ -1,6 +1,6 @@
 package command
 
-import "gopkg.in/urfave/cli.v2"
+import cli "github.com/urfave/cli/v2"
 
 // Config represents CLI config
 type Config struct {

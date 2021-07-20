@@ -3,8 +3,9 @@ package command
 import (
 	"context"
 	"fmt"
-	"github.com/coreos/etcd/clientv3"
-	"gopkg.in/urfave/cli.v2"
+
+	cli "github.com/urfave/cli/v2"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func init() {

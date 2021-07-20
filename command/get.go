@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/coreos/etcd/clientv3"
-	"gopkg.in/urfave/cli.v2"
+
+	cli "github.com/urfave/cli/v2"
+	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"encoding/json"
-	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"os"
+
+	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/kubectl/pkg/scheme"
 )
 
 func init() {

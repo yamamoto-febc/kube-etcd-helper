@@ -31,9 +31,7 @@ clean:
 
 .PHONY: tools
 tools:
-	go get -u github.com/golang/dep/cmd/dep
-	go get -v github.com/alecthomas/gometalinter
-	gometalinter --install
+	go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1
 
 .PHONY: build $(BUILD_TARGETS) bin/$(GOOS)/$(GOARCH)/peco$(SUFFIX)
 
@@ -76,7 +74,7 @@ test: lint
 
 .PHONY: lint
 lint: fmt
-	gometalinter --vendor --skip=vendor/ --cyclo-over=15 --disable=gas --disable=maligned --deadline=2m ./...
+	golangci-lint run
 	@echo
 
 .PHONY: fmt

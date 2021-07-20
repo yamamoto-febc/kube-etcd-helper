@@ -3,9 +3,10 @@ package command
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/pkg/transport"
 	"time"
+
+	"github.com/coreos/etcd/pkg/transport"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func etcdConn() (*clientv3.Client, error) {
