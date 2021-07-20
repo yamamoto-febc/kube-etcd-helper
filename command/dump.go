@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/coreos/etcd/clientv3"
-	"gopkg.in/urfave/cli.v2"
+
+	cli "github.com/urfave/cli/v2"
+	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"encoding/json"
-	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
-	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"os"
 	"path/filepath"
 	"strings"
+
+	homedir "github.com/mitchellh/go-homedir"
+	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/kubectl/pkg/scheme"
 )
 
 func init() {
